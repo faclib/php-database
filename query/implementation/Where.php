@@ -1,150 +1,20 @@
 <?php
 /**
- * ACDbBaseCommand.php file
+ * Where class  - Where.php file
  *
- * @author     Tyurin D. <fobia3d@gmail.com>
- * @copyright   Copyright (c) 2013 AC Software
+ * @author     Dmitriy Tyurin <fobia3d@gmail.com>
+ * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
+
+namespace Fobia\Db;
+use \PDO;
 
 /**
- * ACDbBaseCommand class.
+ * Where class
  *
- * @package AC.db.command
+ * @package		fobia.db
  */
-abstract class ACDbBaseCommand
-{
-
-    /** @var ACDbConnection */
-    protected $_dbConnection;
-
-    /**
-     * @var array
-     */
-    protected $_query = array();
-
-    /**
-     * Используемые таблицы
-     * @var array
-     */
-    protected $_tables = array();
-
-    /**
-     * Команда
-     * @var string
-     */
-    protected $_command;
-
-    public function __construct(ACDbConnection $dbConnection)
-    {
-        $this->_dbConnection = $dbConnection;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->toString();
-    }
-
-    /**
-     * @return string
-     */
-    public function toString()
-    {
-        @extract($this->_query, EXTR_SKIP);
-
-        $sql = $this->_command;
-
-        if (isset($distinct))
-            $sql.="\nDISTINCT";
-
-        if (isset($calc))
-            $sql.="\nSQL_CALC_FOUND_ROWS";
-
-        if (isset($ignore))
-            $sql.="\nIGNORE";
-
-        if (isset($command))
-            $sql.="\n" . $command;
-
-
-        if (isset($from))
-            $sql.="\nFROM " . $from;
-
-        if (isset($join))
-            $sql.="\n" . (is_array($join) ? implode("\n", $join) : $join);
-
-        if (isset($set))
-            $sql.="\nSET " . $set;
-
-        if (isset($where))
-            $sql.="\nWHERE " . $where;
-
-        if (isset($group))
-            $sql.="\nGROUP BY " . $group;
-
-        if (isset($having))
-            $sql.="\nHAVING " . $having;
-
-        if (isset($order))
-            $sql.="\nORDER BY " . $order;
-
-        if (isset($limit))
-            $sql.="\nLIMIT " . $limit;
-
-        if (isset($union))
-            $sql.= "\nUNION (\n" . (is_array($union) ? implode("\n) UNION (\n",
-                                                               $union) : $union) . ')';
-
-        return $sql;
-    }
-
-    /**
-     * Выполнить запрос
-     * @return ACDbResult
-     */
-    public function query()
-    {
-        $result = $this->_dbConnection->query($this->toString());
-        return $result;
-    }
-
-    public function &getQuery($name)
-    {
-        return $this->_query[$name];
-    }
-
-    /**
-     * Экранирует значение
-     *
-     * @param string $value
-     */
-    protected function _quoteValeu(&$value)
-    {
-        $value = $this->_dbConnection->quoteEscapeString($value);
-        return $value;
-    }
-
-    /**
-     * Экранирует название столбцов
-     *
-     * @param string $value
-     * @return string
-     */
-    protected function _quoteTable(&$value)
-    {
-        $value = $this->_dbConnection->quoteTableName($value);
-        return $value;
-    }
-}
-
-/**
- * ACDbWhereCommand class.
- *
- * @package AC.db.command
- */
-abstract class ACDbWhereCommand extends ACDbBaseCommand
+class Where extends Base
 {
 
     /**
@@ -161,7 +31,7 @@ abstract class ACDbWhereCommand extends ACDbBaseCommand
         }
 
         if ($list) {
-            $cols = implode(",", ACPropertyValue::ensFields($cols));
+            $cols = implode(",", parseFields($cols));
         }
 
         $this->_query['order'] .= $cols;
@@ -178,10 +48,10 @@ abstract class ACDbWhereCommand extends ACDbBaseCommand
     public function group($cols, $list = true)
     {
         if ($list) {
-            $cols = implode(",", ACPropertyValue::ensFields($cols));
+            $cols = implode(",", parseFields($cols));
         }
 
-        if ( ! $cols) {
+        if (!$cols) {
             return $this;
         }
         if ($this->_query['group']) {
@@ -203,19 +73,23 @@ abstract class ACDbWhereCommand extends ACDbBaseCommand
      * @return self
      */
     public function addWhere($column, $value, $partialMatch = '=',
-                             $operator = 'AND', $escape = true)
+            $operator = 'AND', $escape = true)
     {
+        $self = $this;
         if (in_array($partialMatch, array("<>", "<=", ">=", "<", ">", "="))) {
             if ($escape) {
-                $this->_quoteValeu($value);
+                $this->quoteValeu($value);
             }
             $where = "$column $partialMatch $value";
         }
 
         if (in_array($partialMatch, array("IN", "NOT IN", "ALL", "ANY"))) {
-            $value = ACPropertyValue::ensFields($value);
+            $value = parseFields($value);
             if ($escape) {
-                array_walk($value, array($this, "_quoteValeu"));
+                array_walk($value,
+                           function(&$item) use($self) {
+                    $item = $self->quoteValue($item);
+                });
             }
             if (count($value) == 0) {
                 $value = array("NULL");
@@ -226,7 +100,7 @@ abstract class ACDbWhereCommand extends ACDbBaseCommand
 
         if (in_array($partialMatch, array("LIKE", "NOT LIKE"))) {
             if ($escape) {
-                $this->_quoteValeu($value);
+                $this->quoteValeu($value);
             }
             $where = $column . " " . $partialMatch . " " . $value;
         }
@@ -234,7 +108,10 @@ abstract class ACDbWhereCommand extends ACDbBaseCommand
         if (in_array($partialMatch, array("BETWEEN", "NOT BETWEEN"))) {
             if (is_array($value)) {
                 if ($escape) {
-                    array_walk($value, array($this, "_quoteValeu"));
+                    array_walk($value,
+                               function(&$item) use($self) {
+                        $item = $self->quoteValeu($item);
+                    });
                 }
                 $value = implode(' AND ', $value);
             }
@@ -243,8 +120,8 @@ abstract class ACDbWhereCommand extends ACDbBaseCommand
 
 
         if ($this->_query['where']) {
-            if (( ! in_array($operator, array("AND", "OR", "XOR")))) {
-                LOG::error("Invalid operator Where : " . $operator);    // LOG::error
+            if ((!in_array($operator, array("AND", "OR", "XOR")))) {
+                //LOG::error("Invalid operator Where : " . $operator);    // LOG::error
                 $operator = "AND";
             }
             $this->_query['where'] .= " " . $operator . " ";

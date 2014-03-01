@@ -1,12 +1,18 @@
 <?php
 /**
- * ACDbSelectCommand class  - ACDbSelectCommand.php file
+ * Select class  - Select.php file
  *
- * @author     Tyurin D. <fobia3d@gmail.com>
- * @copyright   Copyright (c) 2013 AC Software
+ * @author     Dmitriy Tyurin <fobia3d@gmail.com>
+ * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
 
+namespace Fobia\Db;
+
+use \PDO;
+use \PDOStatement;
+
 /**
+ * Select class
  * ACDbSelectCommand class.
  *
  * Выборга из таблици
@@ -26,13 +32,12 @@
  * [LIMIT [offset,] rows]
  * [PROCEDURE procedure_name]
  * [FOR UPDATE | LOCK IN SHARE MODE]]
- *
- * @package AC.db.command
+ * @package		fobia.db
  */
-class ACDbSelectCommand extends ACDbWhereCommand
+class Select extends Where
 {
 
-    protected $_command     = 'SELECT';
+    protected $_command   = 'SELECT';
     private $_calc_tables = null;
 
     /**
@@ -41,10 +46,9 @@ class ACDbSelectCommand extends ACDbWhereCommand
      * @param string|array $select
      * @param bool $escape
      */
-    public function __construct(ACDbConnection $dbConnection, $select = "*",
-                                $escape = false)
+    public function __construct(PDO $db, $select = "*", $escape = false)
     {
-        parent::__construct($dbConnection);
+        parent::__construct($db);
         $this->_query['select'] = array();
 
         if (func_num_args() > 1) {
@@ -63,18 +67,17 @@ class ACDbSelectCommand extends ACDbWhereCommand
     public function select($select, $escape = false, $list = true)
     {
         if ($list) {
-            $select = ACPropertyValue::ensFields($select);
+            $select = parseFields($select);
         } else {
             $select = array($select);
         }
 
         if ($select) {
             if ($escape) {
-                array_walk($select, array($this, '_quoteTable'));
+                array_walk($select, array($this, 'quoteTable'));
             }
 
-            $this->_query['select'] = array_merge($this->_query['select'],
-                                                  $select);
+            $this->_query['select'] = am($this->_query['select'], $select);
         }
         return $this;
     }
@@ -89,11 +92,11 @@ class ACDbSelectCommand extends ACDbWhereCommand
     }
 
     /**
-     * @return ACDbResult
+     * @return PDOStatement
      */
     public function query()
     {
-        $DB = $this->_dbConnection;
+        $db = $this->db;
 
         // Блокируем таблицы
         if ($this->_query['calc']) {
@@ -110,33 +113,34 @@ class ACDbSelectCommand extends ACDbWhereCommand
             $tables = $this->_tables;
             array_walk($tables,
                        function(&$value) {
-                        $value .= ' READ';
-                    });
+                $value .= ' READ';
+            });
             $query = 'LOCK TABLES ' . implode(",", $tables);
 
-            $DB->tablesLock = true;
+            //$DB->tablesLock = true;
 
-            $DB->query($query);
+            $db->query($query);
         }
 
         $result = parent::query();
+        /*
+          // Количество совпадений (без лимита)
+          if ($this->_query['calc']) {
+          $result_count = $DB->query("SELECT FOUND_ROWS() as count");
+          $count        = $result_count->fetch_assoc();
 
-        // Количество совпадений (без лимита)
-        if ($this->_query['calc']) {
-            $result_count = $DB->query("SELECT FOUND_ROWS() as count");
-            $count        = $result_count->fetch_assoc();
+          $result_count->close();
+          $result->found_rows = (int) $count['count'];
+          $result->calc       = array(
+          'found'  => $result->found_rows,
+          'limit'  => $this->_query['limit'],
+          'offset' => $this->_query['offset']
+          );
 
-            $result_count->close();
-            $result->found_rows = (int) $count['count'];
-            $result->calc       = array(
-                'found'  => $result->found_rows,
-                'limit'  => $this->_query['limit'],
-                'offset' => $this->_query['offset']
-            );
-
-            $DB->query('UNLOCK TABLES');
-            $DB->tablesLock = false;
-        }
+          $DB->query('UNLOCK TABLES');
+          $DB->tablesLock = false;
+          }
+         */
         return $result;
     }
 
@@ -146,53 +150,56 @@ class ACDbSelectCommand extends ACDbWhereCommand
 
         $sql = 'SELECT';
 
-        if (isset($query['distinct']))
+        if (isset($query['distinct'])) {
             $sql .= ' DISTINCT ';
+        }
 
-        if ($query['calc'])
+        if ($query['calc']) {
             $sql .= ' SQL_CALC_FOUND_ROWS ';
-
-        if ( ! count($query['select'])) {
+        }
+        if (!count($query['select'])) {
             $sql .= ' *';
         } else {
             $sql .= ' ' . implode(", ", $query['select']);
         }
 
-        if (isset($query['from']))
+        if (isset($query['from'])) {
             $sql.="\nFROM " . $query['from'];
-
-        if (isset($query['join']))
+        }
+        if (isset($query['join'])) {
             $sql.="\n" . (is_array($query['join']) ? implode("\n",
                                                              $query['join']) : $query['join']);
-
-        if (isset($query['where']))
+        }
+        if (isset($query['where'])) {
             $sql.="\nWHERE " . $query['where'];
-
-        if (isset($query['group']))
+        }
+        if (isset($query['group'])) {
             $sql.="\nGROUP BY " . $query['group'];
-
-        if (isset($query['having']))
+        }
+        if (isset($query['having'])) {
             $sql.="\nHAVING " . $query['having'];
-
-        if (isset($query['order']))
+        }
+        if (isset($query['order'])) {
             $sql.="\nORDER BY " . $query['order'];
-
+        }
         $limit  = isset($query['limit']) ? (int) $query['limit'] : -1;
         $offset = isset($query['offset']) ? (int) $query['offset'] : -1;
 
         if ($limit > 0 || $offset >= 0) {
-            if ($limit <= 0)
-                $limit  = 15;
-            if ($offset < 0)
+            if ($limit <= 0) {
+                $limit = 15;
+            }
+            if ($offset < 0) {
                 $offset = 0;
+            }
 
             $sql .= "\nLIMIT " . $offset . ", " . $limit;
         }
 
-        if (isset($query['union']))
+        if (isset($query['union'])) {
             $sql.= "\nUNION (\n" . (is_array($query['union']) ? implode("\n) UNION (\n",
                                                                         $query['union']) : $query['union']) . ')';
-
+        }
         return $sql;
     }
 
@@ -242,8 +249,7 @@ class ACDbSelectCommand extends ACDbWhereCommand
      */
     public function addLockTables($tables)
     {
-        $this->_tables = array_unique(am($this->_tables,
-                                         ACPropertyValue::ensFields($tables)));
+        $this->_tables = array_unique(am($this->_tables, parseFields($tables)));
         return $this;
     }
 
@@ -257,7 +263,7 @@ class ACDbSelectCommand extends ACDbWhereCommand
     public function leftJoinUsing($table, $using)
     {
         $this->_tables[] = $table;
-        $using           = implode(ACPropertyValue::ensFields($using, false));
+        $using           = implode("", parseFields($using));
         $_join .= ' LEFT JOIN ' . $table
                 . ' USING(' . $using . ') ';
         $this->_query['join'] .= $_join;

@@ -1,32 +1,32 @@
 <?php
 /**
- * ACDbUpdateCommand class  - ACDbUpdateCommand.php file
+ * Update class  - Update.php file
  *
- * @author     Tyurin D. <fobia3d@gmail.com>
- * @copyright   Copyright (c) 2013 AC Software
+ * @author     Dmitriy Tyurin <fobia3d@gmail.com>
+ * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
 
+namespace Fobia\Db;
+
+use \PDO;
+
 /**
- * Обновления таблици
- * UPDATE [LOW_PRIORITY] [IGNORE] tbl_name
- * SET col_name1=expr1 [, col_name2=expr2, ...]
- * [WHERE where_definition]
- * [LIMIT #]
+ * Update class
  *
- * @package AC.db.command
+ * @package		fobia.db
  */
-class ACDbUpdateCommand extends ACDbWhereCommand
+class Update extends Where
 {
 
     protected $_command = 'UPDATE';
-    private $_filter  = null;
+    private $_filter    = null;
 
     /**
      * @param string $table таблицы обновления
      */
-    public function __construct(ACDbConnection $dbConnection, $table)
+    public function __construct(PDO $db, $table)
     {
-        parent::__construct($dbConnection);
+        parent::__construct($db);
         $this->_query['command'] = $table;
     }
 
@@ -42,12 +42,12 @@ class ACDbUpdateCommand extends ACDbWhereCommand
     {
         if (is_array($sets)) {
             if ($escape) {
-                array_walk($sets, array($this, '_quoteValeu'));
+                array_walk($sets, array($this, 'quoteValeu'));
             }
             array_walk($sets,
                        function(&$value, $key) {
-                        $value = $key . "=" . $value;
-                    });
+                $value = $key . "=" . $value;
+            });
 
             $sets = implode(", ", $sets);
         }
@@ -70,17 +70,20 @@ class ACDbUpdateCommand extends ACDbWhereCommand
     public function addSet($column, $value, $escape_quote = true)
     {
         if ($this->_filter) {
-            if ( ! in_array($column, $this->_filter))
+            if (!in_array($column, $this->_filter)) {
                 return $this;
+            }
         }
 
-        if (isset($this->_query['set']))
+        if (isset($this->_query['set'])) {
             $this->_query['set'] .= ", ";
-        else
+        } else {
             $this->_query['set'] = "";
+        }
 
-        if ($escape_quote)
-            $value = $this->_dbConnection->quoteEscapeString($value);
+        if ($escape_quote) {
+            $value = $this->quoteEscape($value);
+        }
 
         $this->_query['set'] .= $column . "=" . $value;
 

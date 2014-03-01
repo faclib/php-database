@@ -1,0 +1,17 @@
+{
+    "name": "faclib/php-db-command",
+    "description": "PHP-DB-Command.",
+    "authors": [
+        {
+            "name": "Dmitriy Tyurin",
+            "email": "fobia3d@gmail.com"
+        }
+    ],
+    "repositories": [
+        { "type": "git", "url": "git://github.com/faclib/php-base-utils.git" }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "faclib/php-base-utils":"dev-master"
+    }
+}
