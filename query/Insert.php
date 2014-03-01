@@ -114,12 +114,8 @@ class Insert extends Base
      */
     public function values(array $values, $escape = true)
     {
-        $self = $this;
         if ($escape) {
-            array_walk($values,
-                       function(&$item) use($self) {
-                $item = $self->quoteEscape($item);
-            });
+            array_walk($values, array($this, 'quoteEscape'));
         }
         $this->_values = array_merge($this->_values, $values);
         return $this;
@@ -144,7 +140,7 @@ class Insert extends Base
      * @param string $column
      * @param string $value
      * @param bool $quoteEscape
-     * @return ACDbInsertCommand
+     * @return self
      */
     public function addValue($column, $value, $quoteEscape = true)
     {
@@ -171,12 +167,8 @@ class Insert extends Base
      */
     public function addRow($values, $escape = true)
     {
-        $self = $this;
         if ($escape) {
-            array_walk($values,
-                       function (&$item) use ($self) {
-                $item = $self->quoteEscape($item);
-            });
+            array_walk($values, array($this, 'quoteEscape'));
         }
         $this->_rows[] = $values;
 
