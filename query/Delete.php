@@ -1,23 +1,21 @@
 <?php
 /**
- * ACDbDeleteCommand class  - ACDbDeleteCommand.php file
+ * Delete class  - Delete.php file
  *
- * @author     Tyurin D. <fobia3d@gmail.com>
- * @copyright   Copyright (c) 2013 AC Software
+ * @author     Dmitriy Tyurin <fobia3d@gmail.com>
+ * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
 
+namespace Fobia\Db;
+
+use \PDO;
+
 /**
- * ACDbBaseCommand class.
+ * Delete class
  *
- * Удаление записи из таблици
- *
- * DELETE [LOW_PRIORITY | QUICK] table_name[.*] [,table_name[.*] ...]
- * FROM table-references
- * [WHERE where_definition]
- *
- * @package AC.db.command
+ * @package		fobia.db
  */
-class ACDbDeleteCommand extends ACDbWhereCommand
+class Delete extends Where
 {
 
     protected $_command = 'DELETE';
@@ -28,9 +26,9 @@ class ACDbDeleteCommand extends ACDbWhereCommand
      * @param string|array $tables
      *
      */
-    public function __construct(ACDbConnection $dbConnection)
+    public function __construct(PDO $db)
     {
-        parent::__construct($dbConnection);
+        parent::__construct($db);
     }
 
     /**

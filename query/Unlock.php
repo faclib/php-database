@@ -1,31 +1,35 @@
 <?php
 /**
- * ACDbUnlockCommand class  - ACDbUnlockCommand.php file
+ * Unlock class  - Unlock.php file
  *
- * @author     Tyurin D. <fobia3d@gmail.com>
- * @copyright  Copyright (c) 2012 AC Software
+ * @author     Dmitriy Tyurin <fobia3d@gmail.com>
+ * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
 
+namespace Fobia\Db;
+
+use \PDO;
+
 /**
- * ACDbUnlockCommand class
+ * Unlock class
  *
- * @package AC.db.command
+ * @package		fobia.db
  */
-class ACDbUnlockCommand extends ACDbBaseCommand
+class Unlock extends Base
 {
 
     protected $_command = 'UNLOCK';
     protected $_tables  = null;
 
-    public function __construct(ACDbConnection $dbConnection)
+    public function __construct(PDO $db)
     {
-        parent::__construct($dbConnection);
+        parent::__construct($db);
         $this->_query = array('UNLOCK TABLES');
     }
 
     /**
      * @param string $table
-     * @return ACDbUnlockCommand
+     * @return self
      */
     public function addTable($table)
     {
@@ -39,7 +43,7 @@ class ACDbUnlockCommand extends ACDbBaseCommand
 
         $result = parent::query();
 
-        $this->_dbConnection->tablesLock = false;
+        // $this->_dbConnection->tablesLock = false;
 
         return $result;
     }

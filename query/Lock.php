@@ -1,17 +1,21 @@
 <?php
 /**
- * ACDbLockCommand class  - ACDbLockCommand.php file
+ * Lock class  - Lock.php file
  *
- * @author     Tyurin D. <fobia3d@gmail.com>
- * @copyright   Copyright (c) 2013 AC Software
+ * @author     Dmitriy Tyurin <fobia3d@gmail.com>
+ * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
 
+namespace Fobia\Db;
+
+use \PDO;
+
 /**
- * ACDbLockCommand class
+ * Lock class
  *
- * @package AC.db.command
+ * @package		fobia.db
  */
-class ACDbLockCommand extends ACDbBaseCommand
+class Lock extends Base
 {
 
     protected $_command = 'LOCK';
@@ -19,12 +23,12 @@ class ACDbLockCommand extends ACDbBaseCommand
 
     /**
      *
-     * @param ACDbConnection $dbConnection
+     * @param PDO $db
      * @param string|array   $tables
      */
-    public function __construct(ACDbConnection $dbConnection, $tables)
+    public function __construct(PDO $db, $tables)
     {
-        parent::__construct($dbConnection);
+        parent::__construct($db);
 
         $this->_query = array('LOCK TABLES ');
 
@@ -45,7 +49,7 @@ class ACDbLockCommand extends ACDbBaseCommand
      *
      * @param string $table
      * @param string $write
-     * @return \ACDbLockCommand
+     * @return self
      */
     public function addTable($table, $write = false)
     {
@@ -60,7 +64,7 @@ class ACDbLockCommand extends ACDbBaseCommand
 
     public function query()
     {
-        $this->_dbConnection->tablesLock = true;
+        // $this->db->tablesLock = true;
 
         $this->_query[] = implode(", ", $this->_tables);
 

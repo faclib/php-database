@@ -1,4 +1,13 @@
+.DS_Store
+Thumbs.db
+
+*.sublime-project
+*.sublime-workspace
+
 /nbproject
 /vendor
-composer.lock
 tmp
+tmp-*
+
+composer.lock
+

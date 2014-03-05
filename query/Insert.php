@@ -1,29 +1,32 @@
 <?php
 /**
- * ACDbInsertCommand class  - ACDbInsertCommand.php file
+ * Insert class  - Insert.php file
  *
- * @author     Tyurin D. <fobia3d@gmail.com>
- * @copyright   Copyright (c) 2013 AC Software
+ * @author     Dmitriy Tyurin <fobia3d@gmail.com>
+ * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
 
+namespace Fobia\Db;
+
+use \PDO;
+use \PDOStatement;
+
 /**
- * Вставка записи в табоицу.
- * INSERT [IGNORE] [INTO] tbl_name [(col_name,...)]
- * VALUES (expression,...),(...),...
+ * Insert class
  *
- * @package AC.db.command
+ * @package		fobia.db
  */
-class ACDbInsertCommand extends ACDbBaseCommand
+class Insert extends Base
 {
 
     protected $_command = 'INSERT';
-    private $_values  = array();
-    private $_rows    = array();
-    private $_filter  = null;
+    private $_values    = array();
+    private $_rows      = array();
+    private $_filter    = null;
 
-    public function __construct(ACDbConnection $dbConnection)
+    public function __construct(PDO $db)
     {
-        parent::__construct($dbConnection);
+        parent::__construct($db);
     }
 
     public function toString()
@@ -111,8 +114,9 @@ class ACDbInsertCommand extends ACDbBaseCommand
      */
     public function values(array $values, $escape = true)
     {
-        if ($escape)
-            array_walk($values, array($this->_dbConnection, 'quoteEscapeString'));
+        if ($escape) {
+            array_walk($values, array($this, 'quoteEscape'));
+        }
         $this->_values = array_merge($this->_values, $values);
         return $this;
     }
@@ -136,12 +140,12 @@ class ACDbInsertCommand extends ACDbBaseCommand
      * @param string $column
      * @param string $value
      * @param bool $quoteEscape
-     * @return ACDbInsertCommand
+     * @return self
      */
     public function addValue($column, $value, $quoteEscape = true)
     {
         if ($quoteEscape) {
-            $value = $this->_dbConnection->quoteEscapeString($value);
+            $value = $this->quoteEscape($value);
         }
 
         $this->_values[$column] = $value;
@@ -164,7 +168,7 @@ class ACDbInsertCommand extends ACDbBaseCommand
     public function addRow($values, $escape = true)
     {
         if ($escape) {
-            array_walk($values, array($this->_dbConnection, 'quoteEscapeString'));
+            array_walk($values, array($this, 'quoteEscape'));
         }
         $this->_rows[] = $values;
 
