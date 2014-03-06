@@ -2,11 +2,11 @@
 /**
  * Select class  - Select.php file
  *
- * @author     Dmitriy Tyurin <fobia3d@gmail.com>
+ * @author     Dmitriy Tyurin <Fac3d@gmail.com>
  * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
 
-namespace Fobia\Db;
+namespace Fac\Db;
 
 use \PDO;
 use \PDOStatement;
@@ -32,7 +32,7 @@ use \PDOStatement;
  * [LIMIT [offset,] rows]
  * [PROCEDURE procedure_name]
  * [FOR UPDATE | LOCK IN SHARE MODE]]
- * @package		fobia.db
+ * @package		Fac.db
  */
 class Select extends Where
 {

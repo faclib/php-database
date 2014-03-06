@@ -2,18 +2,18 @@
 /**
  * Lock class  - Lock.php file
  *
- * @author     Dmitriy Tyurin <fobia3d@gmail.com>
+ * @author     Dmitriy Tyurin <Fac3d@gmail.com>
  * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
 
-namespace Fobia\Db;
+namespace Fac\Db;
 
 use \PDO;
 
 /**
  * Lock class
  *
- * @package		fobia.db
+ * @package		Fac.db
  */
 class Lock extends Base
 {
