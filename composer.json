@@ -1,6 +1,7 @@
 {
-    "name": "faclib/php-db-command",
-    "description": "PHP DB Command.",
+    "name": "faclib/database",
+    "description": "PHP DataBase Command.",
+    "type": "library",
     "authors": [
         {
             "name": "Dmitriy Tyurin",
@@ -8,11 +9,11 @@
         }
     ],
     "repositories": [
-        { "type": "git", "url": "git://github.com/faclib/php-base-utils.git" }
+        { "type": "git", "url": "git://github.com/faclib/php-base.git" }
     ],
     "require": {
         "php": ">=5.3.0",
-        "faclib/php-base-utils":"dev-master"
+        "faclib/base": "dev-master"
     },
     "autoload": {
         "classmap": ["query"]
