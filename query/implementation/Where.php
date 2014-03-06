@@ -75,7 +75,7 @@ class Where extends Base {
         $self = $this;
         if (in_array($partialMatch, array("<>", "<=", ">=", "<", ">", "="))) {
             if ($escape) {
-                $this->quoteValeu($value);
+                $self->quoteValue($value);
             }
             $where = "$column $partialMatch $value";
         }
@@ -96,7 +96,7 @@ class Where extends Base {
 
         if (in_array($partialMatch, array("LIKE", "NOT LIKE"))) {
             if ($escape) {
-                $this->quoteValeu($value);
+                $this->quoteValue($value);
             }
             $where = $column . " " . $partialMatch . " " . $value;
         }
@@ -105,7 +105,7 @@ class Where extends Base {
             if (is_array($value)) {
                 if ($escape) {
                     array_walk($value, function(&$item) use($self) {
-                        $item = $self->quoteValeu($item);
+                        $item = $self->quoteValue($item);
                     });
                 }
                 $value = implode(' AND ', $value);

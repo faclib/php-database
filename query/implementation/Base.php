@@ -115,7 +115,7 @@ class Base {
      *
      * @param string $value
      */
-    protected function quoteValeu(&$value) {
+    protected function quoteValue(&$value) {
         $value = $this->db->quote($value);
         return $value;
     }
@@ -127,7 +127,7 @@ class Base {
      * @param string $value
      */
     protected function quoteEscape(&$value) {
-        $value = "'" . $this->quoteValeu($value) . "'";
+        $value = "'" . $this->quoteValue($value) . "'";
         return $value;
     }
 

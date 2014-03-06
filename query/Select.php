@@ -13,7 +13,6 @@ use \PDOStatement;
 
 /**
  * Select class
- * ACDbSelectCommand class.
  *
  * Выборга из таблици
  *
@@ -62,7 +61,7 @@ class Select extends Where
      * @param array|string $select   имена полей
      * @param bool         $escape   экранировать
      * @param bool         $list     преобразовать в список или это выражение
-     * @return ACDbSelectCommand
+     * @return self
      */
     public function select($select, $escape = false, $list = true)
     {

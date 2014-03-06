@@ -19,4 +19,4 @@ $dsn = 'mysql:dbname=test;host=localhost';
 $user = 'root';
 $password = '';
 
-$dbh = new PDO($dsn, $user, $password);
+$db = new PDO($dsn, $user, $password);
