@@ -2,7 +2,7 @@
 /**
  * Insert class  - Insert.php file
  *
- * @author     Dmitriy Tyurin <Fac3d@gmail.com>
+ * @author     Dmitriy Tyurin <fobia3d@gmail.com>
  * @copyright  Copyright (c) 2014 Dmitriy Tyurin
  */
 

@@ -7,6 +7,6 @@
         "faclib/base": "dev-master"
     },
     "autoload": {
-        "classmap": ["query"]
+        "classmap": ["src"]
     }
 }
